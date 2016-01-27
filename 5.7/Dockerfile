@@ -37,6 +37,17 @@ RUN sed -Ei 's/^(bind-address|log)/#&/' /etc/mysql/my.cnf \
 	&& echo 'skip-host-cache\nskip-name-resolve' | awk '{ print } $1 == "[mysqld]" && c == 0 { c = 1; system("cat") }' /etc/mysql/my.cnf > /tmp/my.cnf \
 	&& mv /tmp/my.cnf /etc/mysql/my.cnf
 
+
+# Setup Mysql character to utf-8
+### Idea from http://outofcontrol.ca/blog/comments/change-mysql-5.5-default-character-set-to-utf8
+RUN sed -i "/default-character-set/d" /etc/mysql/my.cnf
+RUN sed -i "/\[mysqld]/a skip-character-set-client-handshake" /etc/mysql/my.cnf
+RUN sed -i "/\[mysqld]/a collation-server=utf8_unicode_ci" /etc/mysql/my.cnf
+RUN sed -i "/\[mysqld]/a character-set-server=utf8" /etc/mysql/my.cnf
+RUN sed -i "/\[mysqld]/a init_connect= 'SET NAMES utf8' " /etc/mysql/my.cnf
+RUN sed -i "/\[mysqld]/a init_connect=‘SET collation_connection = utf8_unicode_ci' " /etc/mysql/my.cnf
+
+
 VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /entrypoint.sh
